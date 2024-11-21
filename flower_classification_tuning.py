@@ -130,13 +130,18 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
             if(i % 100 == 2):
                 print(f"Image processed number {i}")
         
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(train_loader)}")
+        epoch_train_accuracy = 100 * correct / total
+        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss / len(train_loader)}, Training Accuracy: {epoch_train_accuracy}%")
+    
+    # Analyze training accuracy
+    total_train_accuracy = 100 * total_train_correct / total_train_images
+    print(f"Final Training Accuracy: {total_train_accuracy}%")
 
     # Analyze training time
     end_t: datetime = datetime.datetime.now()
     total_time = end_t - init_t
     print(f"Model training time: {total_time.total_seconds()} seconds")
-    return total_time
+    return accuracy, total_time
 
 # 5. Model evaluation function
 def evaluate_model(test_loader, model, device='cpu'):
@@ -168,7 +173,7 @@ def evaluate_model(test_loader, model, device='cpu'):
     return accuracy, total_time
 
 # 6. Main execution function with customizable parameters
-def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.3):
+def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2):
     # Load dataset
     train_loader, test_loader, label_map = load_and_prepare_data(data_dir, batch_size=batch_size, test_size=test_size)
 
@@ -185,12 +190,12 @@ def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.3):
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cpu")
     model.to(device)
-    time_training = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
+    accuracy_training, time_training = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
 
     # Evaluate the model
-    accuracy, time_evaluation = evaluate_model(test_loader, model, device=device)
+    accuracy_test, time_evaluation = evaluate_model(test_loader, model, device=device)
 
-    return accuracy, time_training, time_evaluation
+    return accuracy_training, accuracy_test, time_training, time_evaluation
 
 # Call the main function with custom parameters
 data_dir = "flower_photos"  # Directory containing the flower photos
@@ -202,16 +207,17 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate for training (default: 1e-5)")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size for training (default: 8)")
     parser.add_argument("--num_epochs", type=int, default=3, help="Number of epochs for training (default: 3)")
-    parser.add_argument("--test_size", type=float, default=0.3, help="Percentages of images for the test set")
+    parser.add_argument("--test_size", type=float, default=0.2, help="Percentages of images for the test set")
     parser.add_argument("--output_file", type=str, default="results", help="Path to the results file")
     
     args = parser.parse_args()
 
     # Hauptprogramm mit den Argumenten starten
-    accuracy, time_training, time_evaluation = main(data_dir=args.data_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
+    accuracy_training, accuracy_test, time_training, time_evaluation = main(data_dir=args.data_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
 
      # Ausgabe der Ergebnisse
-    print(f"Accuracy: {accuracy:.2f}%")
+    print(f"Accuracy Train Set: {accuracy_training:.2f}%")
+    print(f"Accuracy Test Set: {accuracy_test:.2f}%")
     print(f"Training Time: {time_training:.2f}s")
     print(f"Evaluation Time: {time_evaluation:.2f}s")
 
@@ -219,6 +225,7 @@ if __name__ == "__main__":
     if args.output_file:
         with open(args.output_file, "a") as f:
             f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, "
-                    f"Accuracy: {accuracy:.2f}%, "
+                    f"Accuracy Train Set: {accuracy_training:.2f}%, "
+                    f"Accuracy Test Set: {accuracy_test:.2f}%, "
                     f"Training Time: {time_training:.2f}s, "
                     f"Evaluation Time: {time_evaluation:.2f}s\n")
