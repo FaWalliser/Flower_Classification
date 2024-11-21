@@ -156,7 +156,7 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     end_t: datetime = datetime.datetime.now()
     total_time = end_t - init_t
     print(f"Model training time: {total_time.total_seconds():.2f} seconds")
-    return total_train_accuracy, total_time
+    return total_train_accuracy, epoch_train_accuracy, total_time
 
 # 5. Model evaluation function
 def evaluate_model(test_loader, model, device='cpu'):
@@ -205,12 +205,12 @@ def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2):
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cpu")
     model.to(device)
-    accuracy_training, time_training = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
+    accuracy_training, accuracy_last_epoch, time_training = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
 
     # Evaluate the model
     accuracy_test, time_evaluation = evaluate_model(test_loader, model, device=device)
 
-    return accuracy_training, accuracy_test, time_training, time_evaluation
+    return accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation
 
 # Call the main function with custom parameters
 data_dir = "flower_photos"  # Directory containing the flower photos
@@ -228,10 +228,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Hauptprogramm mit den Argumenten starten
-    accuracy_training, accuracy_test, time_training, time_evaluation = main(data_dir=args.data_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
+    accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation = main(data_dir=args.data_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
 
      # Ausgabe der Ergebnisse
     print(f"Accuracy Train Set: {accuracy_training:.2f}%")
+    print(f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.2f}%")
     print(f"Accuracy Test Set: {accuracy_test:.2f}%")
     print(f"Training Time: {time_training.total_seconds():.2f}s")
     print(f"Evaluation Time: {time_evaluation.total_seconds():.2f}s")
@@ -241,6 +242,7 @@ if __name__ == "__main__":
         with open(args.output_file, "a") as f:
             f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, "
                     f"Accuracy Train Set: {accuracy_training:.2f}%, "
+                    f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.2f}%, "
                     f"Accuracy Test Set: {accuracy_test:.2f}%, "
                     f"Training Time: {time_training.total_seconds():.2f}s, "
                     f"Evaluation Time: {time_evaluation.total_seconds():.2f}s\n")
