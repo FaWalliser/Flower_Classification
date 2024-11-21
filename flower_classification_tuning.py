@@ -108,10 +108,14 @@ def load_and_prepare_data(data_dir, batch_size=8, test_size=0.2, transform=None)
 def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device='cpu'):
     model.train()  # Set the model to training mode
     i = 0
+    total_train_correct = 0
+    total_train_images = 0
     init_t: datetime = datetime.datetime.now()
     
     for epoch in range(num_epochs):
         total_loss = 0
+        correct = 0
+        total = 0
         for images, labels in train_loader:
             images, labels = images.to(device), labels.to(device)
             
@@ -124,14 +128,25 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
             # Backward pass
             loss.backward()
             optimizer.step()
-            
+
             total_loss += loss.item()
+            
+            # Compute correct predictions and total count
+            _, predicted = torch.max(outputs, 1)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)  # Increment the total count
+
             i += 1
             if(i % 100 == 2):
                 print(f"Image processed number {i}")
         
+        # Compute accuracy for this epoch
         epoch_train_accuracy = 100 * correct / total
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss / len(train_loader)}, Training Accuracy: {epoch_train_accuracy}%")
+        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(train_loader)}, Training Accuracy: {epoch_train_accuracy:.2f}%")
+        
+        # Update total correct predictions and total images
+        total_train_correct += correct
+        total_train_images += total
     
     # Analyze training accuracy
     total_train_accuracy = 100 * total_train_correct / total_train_images
@@ -140,8 +155,8 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     # Analyze training time
     end_t: datetime = datetime.datetime.now()
     total_time = end_t - init_t
-    print(f"Model training time: {total_time.total_seconds()} seconds")
-    return accuracy, total_time
+    print(f"Model training time: {total_time.total_seconds():.2f} seconds")
+    return total_train_accuracy, total_time
 
 # 5. Model evaluation function
 def evaluate_model(test_loader, model, device='cpu'):
@@ -218,8 +233,8 @@ if __name__ == "__main__":
      # Ausgabe der Ergebnisse
     print(f"Accuracy Train Set: {accuracy_training:.2f}%")
     print(f"Accuracy Test Set: {accuracy_test:.2f}%")
-    print(f"Training Time: {time_training:.2f}s")
-    print(f"Evaluation Time: {time_evaluation:.2f}s")
+    print(f"Training Time: {time_training.total_seconds():.2f}s")
+    print(f"Evaluation Time: {time_evaluation.total_seconds():.2f}s")
 
     # Optional: Speichere die Ergebnisse in eine Datei
     if args.output_file:
@@ -227,5 +242,5 @@ if __name__ == "__main__":
             f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, "
                     f"Accuracy Train Set: {accuracy_training:.2f}%, "
                     f"Accuracy Test Set: {accuracy_test:.2f}%, "
-                    f"Training Time: {time_training:.2f}s, "
-                    f"Evaluation Time: {time_evaluation:.2f}s\n")
+                    f"Training Time: {time_training.total_seconds():.2f}s, "
+                    f"Evaluation Time: {time_evaluation.total_seconds():.2f}s\n")
