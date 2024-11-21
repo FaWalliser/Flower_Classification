@@ -1,0 +1,9 @@
+Time without scaling and recoloring (3 Epochs):
+Training: 4960.869418 seconds (but with interrupts)
+Testing: 99.12534 seconds
+Accuracy: 97.00%
+
+Time with scaling and recoloring (3 Epochs):
+Training: 3543.469284 seconds (one short interrupt) / (round about one hour)
+Testing: 98.951276 seconds
+Accuracy: 96.32%
