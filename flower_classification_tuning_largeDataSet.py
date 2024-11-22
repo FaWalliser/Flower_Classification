@@ -1,3 +1,4 @@
+import scipy.io
 import os
 import random
 import datetime
@@ -11,12 +12,11 @@ import torch.optim as optim
 from torchvision import transforms
 import argparse
 
-# 1. Dataset class for flower_photos
+# 1. Dataset-class
 class FlowerDataset(Dataset):
-    def __init__(self, img_paths, labels, processor, transform=None):
+    def __init__(self, img_paths, labels, transform=None):
         self.img_paths = img_paths
         self.labels = labels
-        self.processor = processor
         self.transform = transform
 
     def __len__(self):
@@ -25,45 +25,44 @@ class FlowerDataset(Dataset):
     def __getitem__(self, idx):
         image_path = self.img_paths[idx]
         label = self.labels[idx]
-        
+
         # Open image
         image = Image.open(image_path).convert("RGB")
-        
-        # Apply transform for resizing and normalization
+
+        # Apply transformations
         if self.transform:
             image = self.transform(image)
-        else:
-            # Use processor for resizing and normalizing
-            image = self.processor(images=image, return_tensors="pt")['pixel_values'].squeeze()
-        
+
         return image, label
 
-# 2. Function to load dataset
-def load_dataset(data_dir):
+# 2.2. Other Data set
+def load_dataset_with_mat(data_dir, mat_file_path):
+    # Load labels from .mat-file
+    labels_mat = scipy.io.loadmat(mat_file_path)
+    num_label = labels_mat['labels'][0]  # Extract labels from array
+
     img_paths = []
     labels = []
-    label_map = {label: idx for idx, label in enumerate(os.listdir(data_dir))}
-    
-    # Collect images and labels
-    for label, idx in label_map.items():
-        label_dir = os.path.join(data_dir, label)
-        for img_file in os.listdir(label_dir):
-            img_paths.append(os.path.join(label_dir, img_file))
-            labels.append(idx)
-    
-    # Shuffle dataset
+
+    # Loop over files and assign labels
+    for idx, img_file in enumerate(sorted(os.listdir(data_dir))):  # Sorts for correct assignment
+        img_paths.append(os.path.join(data_dir, img_file))
+        labels.append(num_label[idx] - 1)
+
+    # Shuffle Dataset
     combined = list(zip(img_paths, labels))
     random.shuffle(combined)
     img_paths, labels = zip(*combined)
-    
+
+    # Erstelle die Label-Map aus der .mat-Datei
+    unique_labels = set(num_label)  # z. B. {1, 2, ..., 102}
+    label_map = {label - 1: f"Class_{label}" for label in unique_labels}
+
     return list(img_paths), list(labels), label_map
 
 # 3. Prepare and split dataset
-def load_and_prepare_data(data_dir, batch_size=8, test_size=0.2, transform=None):
-    processor = ViTImageProcessor.from_pretrained('vit-base-patch16-224-in21k')
-    print("Processor initialized")
-
-    img_paths, labels, label_map = load_dataset(data_dir)
+def load_and_prepare_data(data_dir, mat_file_path, batch_size=8, test_size=0.2, transform=None):
+    img_paths, labels, label_map = load_dataset_with_mat(data_dir, mat_file_path)
     print("Dataset loaded")
 
     # Split train- and testset
@@ -82,8 +81,8 @@ def load_and_prepare_data(data_dir, batch_size=8, test_size=0.2, transform=None)
 
 
     # Create Dataset and DataLoader
-    train_dataset = FlowerDataset(train_paths, train_labels, processor, transform=transform)
-    test_dataset = FlowerDataset(test_paths, test_labels, processor, transform=transform)
+    train_dataset = FlowerDataset(train_paths, train_labels, transform=transform)
+    test_dataset = FlowerDataset(test_paths, test_labels, transform=transform)
 
     # Data Augmentation
     #transform_train = transforms.Compose([
@@ -137,8 +136,8 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
             total += labels.size(0)  # Increment the total count
 
             i += 1
-            if(i % 100 == 2):
-                print(f"Image processed number {i}")
+            if(i % 10 == 2):
+                print(f"Image processed number {i} / {len(train_loader.dataset)}")
         
         # Compute accuracy for this epoch
         epoch_train_accuracy = 100 * correct / total
@@ -176,8 +175,8 @@ def evaluate_model(test_loader, model, device='cpu'):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             j += 1
-            if(j % 100 == 2):
-                print(f"Image tested number {j}")
+            if(j % 10 == 2):
+                print(f"Image tested number {j}  / {len(test_loader.dataset)}")
 
     end_test_t: datetime = datetime.datetime.now()
     total_time = end_test_t - init_test_t
@@ -188,9 +187,9 @@ def evaluate_model(test_loader, model, device='cpu'):
     return accuracy, total_time
 
 # 6. Main execution function with customizable parameters
-def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2):
+def main(data_dir, mat_file_path, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2):
     # Load dataset
-    train_loader, test_loader, label_map = load_and_prepare_data(data_dir, batch_size=batch_size, test_size=test_size)
+    train_loader, test_loader, label_map = load_and_prepare_data(data_dir, mat_file_path, batch_size=batch_size, test_size=test_size)
 
     print("Train model:")
     # Load and customize the model
@@ -215,7 +214,8 @@ def main(data_dir, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2):
 # Argumentparser für Kommandozeilenparameter
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a Vision Transformer on a flower dataset")
-    parser.add_argument("--data_dir", type=str, default="flower_photos", help="Path to the dataset directory")
+    parser.add_argument("--data_dir", type=str, default="folwers-102-categories-perso/jpg", help="Path to the dataset directory")
+    parser.add_argument("--mat_file_dir", type=str, default="folwers-102-categories-perso/imagelabels.mat", help="Path to the .mat file")
     parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate for training (default: 1e-5)")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size for training (default: 8)")
     parser.add_argument("--num_epochs", type=int, default=3, help="Number of epochs for training (default: 3)")
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Hauptprogramm mit den Argumenten starten
-    accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation = main(data_dir=args.data_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
+    accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation = main(data_dir=args.data_dir, mat_file_path=args.mat_file_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size)
 
      # Ausgabe der Ergebnisse
     print(f"Accuracy Train Set: {accuracy_training:.2f}%")
