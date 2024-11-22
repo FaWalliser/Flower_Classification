@@ -2,6 +2,7 @@ import scipy.io
 import os
 import random
 import datetime
+import time
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
@@ -66,7 +67,13 @@ def load_and_prepare_data(data_dir, mat_file_path, batch_size=8, test_size=0.2, 
     print("Dataset loaded")
 
     # Split train- and testset
-    train_paths, test_paths, train_labels, test_labels = train_test_split(img_paths, labels, test_size=test_size, random_state=42)
+    train_paths, test_paths, train_labels, test_labels = train_test_split(
+        img_paths, 
+        labels, 
+        test_size=test_size, 
+        random_state=42, 
+        stratify=labels  # Stratified Split - split images according to labels
+    )
 
     print(f"Number of images in training set: {len(train_paths)}")
     print(f"Number of images in test set: {len(test_paths)}")
@@ -112,6 +119,7 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     init_t: datetime = datetime.datetime.now()
     
     for epoch in range(num_epochs):
+        epoch_start_time = time.time()
         total_loss = 0
         correct = 0
         total = 0
@@ -135,9 +143,21 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
             correct += (predicted == labels).sum().item()
             total += labels.size(0)  # Increment the total count
 
-            i += 1
-            if(i % 10 == 2):
-                print(f"Image processed number {i} / {len(train_loader.dataset)}")
+            i += labels.size(0)  # Zähle die verarbeiteten Bilder
+        
+            # Print number and estimated time
+            if i % 10 == 0:  # Print every 10 Batches
+                elapsed_time = time.time() - epoch_start_time
+                total_images = len(train_loader.dataset)
+                remaining_images = total_images - i
+                
+                # Geschätzte verbleibende Zeit
+                time_per_image = elapsed_time / i
+                estimated_remaining_time = time_per_image * remaining_images * num_epochs
+                
+                print(f"Processed {i}/{total_images} images, "
+                  f"Elapsed time: {elapsed_time:.2f} seconds, "
+                  f"Estimated remaining time: {estimated_remaining_time:.2f} seconds")
         
         # Compute accuracy for this epoch
         epoch_train_accuracy = 100 * correct / total
@@ -149,7 +169,9 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     
     # Analyze training accuracy
     total_train_accuracy = 100 * total_train_correct / total_train_images
-    print(f"Final Training Accuracy: {total_train_accuracy}%")
+    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(train_loader):.4f}, "
+          f"Training Accuracy: {epoch_train_accuracy:.2f}%, "
+          f"Time taken: {time.time() - epoch_start_time:.2f} seconds")
 
     # Analyze training time
     end_t: datetime = datetime.datetime.now()
@@ -174,9 +196,23 @@ def evaluate_model(test_loader, model, device='cpu'):
             _, predicted = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-            j += 1
-            if(j % 10 == 2):
-                print(f"Image tested number {j}  / {len(test_loader.dataset)}")
+            
+            j += labels.size(0)  # Zähle die verarbeiteten Bilder
+        
+            # Print number and estimated time
+            if j % 10 == 0:  # Print every 10 Batches
+                elapsed_time = datetime.datetime.now() - init_test_t  # Elapsed time
+                processed_images = j
+                total_images = len(test_loader.dataset)
+                remaining_images = total_images - processed_images
+                
+                time_per_image = elapsed_time.total_seconds() / processed_images
+                estimated_remaining_time = time_per_image * remaining_images
+                
+                # Ausgabe der verstrichenen Zeit und verbleibenden Zeit
+                print(f"Image tested number {processed_images}/{total_images}, "
+                      f"Elapsed time: {elapsed_time}, "
+                      f"Estimated remaining time: {str(datetime.timedelta(seconds=estimated_remaining_time))}")
 
     end_test_t: datetime = datetime.datetime.now()
     total_time = end_test_t - init_test_t
