@@ -123,8 +123,8 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
             # Increment the total image count
             image_count += len(images)
 
-            # Print every 400 images
-            if image_count % 400 == 0:
+            # Print every 1000 images
+            if image_count % 1000 == 0:
                 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 print(f"{current_time} - Processed {image_count} images in current Epoch")
 
