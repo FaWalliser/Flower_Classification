@@ -233,7 +233,7 @@ def main(data_dir, mat_file_path, lr=1e-5, batch_size=8, num_epochs=3, test_size
     model.train()
 
     # Optimizer and Loss function
-    optimizer = optim.Adam(model.parameters(), lr=1e-5, weight_decay=0.01) #lr: learnign rate: 0.00001
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=0.01) #lr: learnign rate: 0.00001
     criterion = nn.CrossEntropyLoss()
 
     # Train the model

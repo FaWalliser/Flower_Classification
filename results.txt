@@ -1,1 +1,12 @@
-
+################## - next experiment - ##################
+LR: 0.0001, Batch Size: 3, Accuracy Train Set: 66.36%, Accuracy Train Set (Last Epoch): 81.21%, Accuracy Test Set: 73.63%, Training Time: 9709.94s, Evaluation Time: 237.45s
+################## - small ViT - ##################
+LR: 0.0001, Batch Size: 8, Accuracy Train Set: 82.22%, Accuracy Train Set (Last Epoch): 84.69%, Accuracy Test Set: 85.47%, Training Time: 1138.73s, Evaluation Time: 56.57s
+LR: 0.0001, Batch Size: 16, Accuracy Train Set: 85.56%, Accuracy Train Set (Last Epoch): 90.47%, Accuracy Test Set: 85.71%, Training Time: 1337.36s, Evaluation Time: 73.31s
+LR: 0.0005, Batch Size: 8, Accuracy Train Set: 11.81%, Accuracy Train Set (Last Epoch): 16.41%, Accuracy Test Set: 17.34%, Training Time: 1517.65s, Evaluation Time: 61.61s
+LR: 0.0005, Batch Size: 16, Accuracy Train Set: 31.99%, Accuracy Train Set (Last Epoch): 36.30%, Accuracy Test Set: 39.07%, Training Time: 1075.72s, Evaluation Time: 56.04s
+################## - next experiment - ##################
+LR: 5e-05, Batch Size: 8, Accuracy Train Set: 84.83%, Accuracy Train Set (Last Epoch): 92.81%, Accuracy Test Set: 91.76%, Training Time: 1101.32s, Evaluation Time: 52.66s
+LR: 5e-05, Batch Size: 16, Accuracy Train Set: 84.57%, Accuracy Train Set (Last Epoch): 94.86%, Accuracy Test Set: 93.28%, Training Time: 1086.69s, Evaluation Time: 54.60s
+LR: 1e-05, Batch Size: 8, Accuracy Train Set: 69.90%, Accuracy Train Set (Last Epoch): 91.19%, Accuracy Test Set: 91.51%, Training Time: 1155.45s, Evaluation Time: 57.01s
+LR: 1e-05, Batch Size: 16, Accuracy Train Set: 62.03%, Accuracy Train Set (Last Epoch): 86.26%, Accuracy Test Set: 87.42%, Training Time: 1069.39s, Evaluation Time: 51.36s

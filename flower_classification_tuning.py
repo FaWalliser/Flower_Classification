@@ -67,7 +67,7 @@ def load_and_prepare_data(data_dir, batch_size=8, test_size=0.2, transform=None)
     print("Dataset loaded")
 
     # Split train- and testset
-    train_paths, test_paths, train_labels, test_labels = train_test_split(img_paths, labels, test_size=test_size, random_state=42)
+    train_paths, test_paths, train_labels, test_labels = train_test_split(img_paths, labels, test_size=test_size, random_state=42, stratify=labels)
 
     print(f"Number of images in training set: {len(train_paths)}")
     print(f"Number of images in test set: {len(test_paths)}")
