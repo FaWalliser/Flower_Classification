@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OUTPUT_FILE="results_V1.txt"  # File for results
+OUTPUT_FILE="results.txt"  # File for results
 
 if [ -f "$OUTPUT_FILE" ]; then
     # If file exists
@@ -8,7 +8,7 @@ if [ -f "$OUTPUT_FILE" ]; then
 fi
 
 # Loop through parameter configurations
-for TR in 2 #12 in total
+for TR in 1 2 3 4 # You have to define multiple numbers, because every Parameter is only computed once
 do
     for LR in 0.00004 0.00005 0.00006 # Select two parameters for Learning rate: 0.0001, 0.0005
     do
