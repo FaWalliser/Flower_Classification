@@ -197,7 +197,8 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     
     # Analyze training accuracy
     total_train_accuracy = 100 * total_train_correct / total_train_images
-    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(train_loader):.4f}, "
+    average_loss = total_loss / len(train_loader)
+    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {average_loss:.4f}, "
           f"Training Accuracy: {epoch_train_accuracy:.2f}%, "
           f"Time taken: {time.time() - epoch_start_time:.2f} seconds")
 
@@ -205,7 +206,7 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
     end_t = time.time()
     total_time = end_t - init_t
     print(f"Model training time: {total_time:.2f} seconds")
-    return total_train_accuracy, epoch_train_accuracy, total_time
+    return total_train_accuracy, epoch_train_accuracy, total_time, average_loss
 
 # 5. Model evaluation function
 def evaluate_model(test_loader, model, device='cpu'):
@@ -225,6 +226,12 @@ def evaluate_model(test_loader, model, device='cpu'):
 
             # Then compute the loss
             outputs = model(images)
+
+            loss = criterion(outputs, labels)  # Calculate loss for the batch
+
+            # Accumulate the loss
+            total_loss += loss.item()
+
             _, predicted = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -251,7 +258,10 @@ def evaluate_model(test_loader, model, device='cpu'):
 
     accuracy = 100 * correct / total
     print(f"Accuracy on test set: {accuracy:.2f}%")
-    return accuracy, total_time
+
+    # After loop, calculate average loss
+    average_loss = total_loss / len(test_loader)
+    return accuracy, total_time, average_loss
 
 # 6. Main execution function with customizable parameters
 def main(data_dir, mat_file_path, lr=1e-5, batch_size=8, num_epochs=3, test_size=0.2, dropout=0.0):
@@ -281,12 +291,12 @@ def main(data_dir, mat_file_path, lr=1e-5, batch_size=8, num_epochs=3, test_size
     #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cpu")
     model.to(device)
-    accuracy_training, accuracy_last_epoch, time_training = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
+    accuracy_training, accuracy_last_epoch, time_training, train_loss = train_model(train_loader, model, optimizer, criterion, num_epochs=num_epochs, device=device)
 
     # Evaluate the model
-    accuracy_test, time_evaluation = evaluate_model(test_loader, model, device=device)
+    accuracy_test, time_evaluation, test_loss = evaluate_model(test_loader, model, device=device)
 
-    return accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation
+    return accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation, train_loss, test_loss
 
 # Argumentparser für Kommandozeilenparameter
 if __name__ == "__main__":
@@ -303,7 +313,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Hauptprogramm mit den Argumenten starten
-    accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation = main(data_dir=args.data_dir, mat_file_path=args.mat_file_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size, dropout=args.dropout)
+    accuracy_training, accuracy_test, accuracy_last_epoch, time_training, time_evaluation, train_loss, test_loss = main(data_dir=args.data_dir, mat_file_path=args.mat_file_dir, lr=args.lr, batch_size=args.batch_size, num_epochs=args.num_epochs, test_size=args.test_size, dropout=args.dropout)
 
      # Ausgabe der Ergebnisse
     print(f"Accuracy Train Set: {accuracy_training:.2f}%")
@@ -311,13 +321,17 @@ if __name__ == "__main__":
     print(f"Accuracy Test Set: {accuracy_test:.2f}%")
     print(f"Training Time: {time_training:.2f}s")
     print(f"Evaluation Time: {time_evaluation:.2f}s")
+    print(f"Training Loss: {train_loss:.2f}s")
+    print(f"Evaluation Loss: {test_loss:.2f}s")
 
     # Optional: Speichere die Ergebnisse in eine Datei
     if args.output_file:
         with open(args.output_file, "a") as f:
             f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, Dropout: {args.dropout}, "
-                    f"Accuracy Train Set: {accuracy_training:.2f}%, "
-                    f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.2f}%, "
-                    f"Accuracy Test Set: {accuracy_test:.2f}%, "
+                    f"Accuracy Train Set: {accuracy_training:.4f}%, "
+                    f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.4f}%, "
+                    f"Accuracy Test Set: {accuracy_test:.4f}%, "
                     f"Training Time: {time_training:.2f}s, "
-                    f"Evaluation Time: {time_evaluation:.2f}s\n")
+                    f"Evaluation Time: {time_evaluation:.2f}s\n, "
+                    f"Training Loss: {train_loss:.4f}s, "
+                    f"Evaluation Loss: {test_loss:.4f}s\n")
