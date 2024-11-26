@@ -315,7 +315,7 @@ if __name__ == "__main__":
     # Optional: Speichere die Ergebnisse in eine Datei
     if args.output_file:
         with open(args.output_file, "a") as f:
-            f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, "
+            f.write(f"LR: {args.lr}, Batch Size: {args.batch_size}, Dropout: {args.dropout}, "
                     f"Accuracy Train Set: {accuracy_training:.2f}%, "
                     f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.2f}%, "
                     f"Accuracy Test Set: {accuracy_test:.2f}%, "
