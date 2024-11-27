@@ -210,9 +210,11 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
 
 # 5. Model evaluation function
 def evaluate_model(test_loader, model, device='cpu'):
+    criterion = torch.nn.CrossEntropyLoss()
     model.eval()
     correct = 0
     total = 0
+    total_loss = 0
 
     processed_images = 0
     init_test_t = time.time()
@@ -332,6 +334,6 @@ if __name__ == "__main__":
                     f"Accuracy Train Set (Last Epoch): {accuracy_last_epoch:.4f}%, "
                     f"Accuracy Test Set: {accuracy_test:.4f}%, "
                     f"Training Time: {time_training:.2f}s, "
-                    f"Evaluation Time: {time_evaluation:.2f}s\n, "
+                    f"Evaluation Time: {time_evaluation:.2f}s, "
                     f"Training Loss: {train_loss:.4f}s, "
                     f"Evaluation Loss: {test_loss:.4f}s\n")
