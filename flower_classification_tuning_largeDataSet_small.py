@@ -194,6 +194,9 @@ def train_model(train_loader, model, optimizer, criterion, num_epochs=3, device=
         # Update total correct predictions and total images
         total_train_correct += correct
         total_train_images += total
+
+    # Save model
+    torch.save(model.state_dict(), "trained_flower_classification_model.pth")
     
     # Analyze training accuracy
     total_train_accuracy = 100 * total_train_correct / total_train_images
