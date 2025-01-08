@@ -286,8 +286,8 @@ def main(data_dir, mat_file_path, lr=1e-5, batch_size=8, num_epochs=3, test_size
 # Argumentparser für Kommandozeilenparameter
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a Vision Transformer on a flower dataset")
-    parser.add_argument("--data_dir", type=str, default="folwers-102-categories-perso/jpg", help="Path to the dataset directory")
-    parser.add_argument("--mat_file_dir", type=str, default="folwers-102-categories-perso/imagelabels.mat", help="Path to the .mat file")
+    parser.add_argument("--data_dir", type=str, default="flowers-102-categories-perso/jpg", help="Path to the dataset directory")
+    parser.add_argument("--mat_file_dir", type=str, default="flowers-102-categories-perso/imagelabels.mat", help="Path to the .mat file")
     parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate for training (default: 1e-5)")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size for training (default: 8)")
     parser.add_argument("--num_epochs", type=int, default=3, help="Number of epochs for training (default: 3)")
