@@ -96,26 +96,6 @@ def load_and_prepare_data(data_dir, mat_file_path, batch_size=8, test_size=0.2, 
     train_dataset = FlowerDataset(train_paths, train_labels, transform=transform)
     test_dataset = FlowerDataset(test_paths, test_labels, transform=transform)
 
-    
-    # Data Augmentation for training
-    # transform_train = create_transform(
-    #     input_size=224,                # Resize images to 224x224
-    #     is_training=True,              # Enable training-specific augmentations (e.g., random crop, flip)
-    #     mean=(0.5, 0.5, 0.5),          # Normalization mean for RGB channels
-    #     std=(0.5, 0.5, 0.5),           # Normalization standard deviation for RGB channels
-    #     color_jitter=0.2,              # Apply color jitter for brightness, contrast, saturation, and hue
-    #     interpolation='bilinear'       # Use bilinear interpolation for resizing
-    # )
-
-    # Transformation for testing (no data augmentation)
-    # transform_test = create_transform(
-    #     input_size=224,                # Resize images to 224x224
-    #     is_training=False,             # Disable training-specific augmentations
-    #     mean=(0.5, 0.5, 0.5),          # Normalization mean for RGB channels
-    #     std=(0.5, 0.5, 0.5),           # Normalization standard deviation for RGB channels
-    #     interpolation='bilinear'       # Use bilinear interpolation for resizing
-    # )
-
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
