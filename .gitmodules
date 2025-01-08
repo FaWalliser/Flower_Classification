@@ -1,0 +1,3 @@
+[submodule "vit_tiny_patch16_224.augreg_in21k"]
+	path = vit_tiny_patch16_224.augreg_in21k
+	url = https://huggingface.co/timm/vit_tiny_patch16_224.augreg_in21k
