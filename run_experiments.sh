@@ -8,7 +8,7 @@ if [ -f "$OUTPUT_FILE" ]; then
 fi
 
 # Loop through parameter configurations
-for TR in 1 2 # You have to define multiple numbers, because every Parameter is only computed once
+for TR in 1 2 3 4 5 6 7 8 9 10 # One run per number
 do
     for DROPOUT in 0.0 0.2 # Select two parameters for dropout: 0.0, 0.2
     do
