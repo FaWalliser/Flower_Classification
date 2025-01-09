@@ -7,18 +7,18 @@ There are multiple commands to either run the program with predefined or specifi
 
 The program can be run with predefined parameters:
 
-```
+```bash
 python flower_classification_tuning_largeDataSet_small.py
 ```
 
 The program can be run with specific parameters (if you don't mention parameters, the predefinitions will be used):
 
-```
+```bash
 python flower_classification_tuning_largeDataSet_small.py --data_dir <training data set path> --mat_file_dir <image label matrix path> --lr <learning rate value> --batch_size <batch size value> --num_epochs <number of epochs> --test_size <test size (percentage)> --dropout <dropout value> --output_file <name of the file for the results>
 ```
 
 If you want to run exactly the configurations we used for training the model, use the following command:
 
-```
+```bash
 bash run_experiments.sh
 ```
